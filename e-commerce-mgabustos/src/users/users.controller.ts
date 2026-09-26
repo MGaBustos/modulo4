@@ -6,10 +6,14 @@ import {
 	Body,
 	UseGuards,
 	Query,
+	ParseUUIDPipe,
+	Put,
+	Delete,
+	BadRequestException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { AuthGuard } from '../auth/guards/auth/auth.guard';
-import { CreateUserDto } from './dto/user.dto';
+import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -30,7 +34,7 @@ export class UsersController {
 	}
 	@Get(':id')
 	@UseGuards(AuthGuard)
-	getUserById(@Param('id') id: string) {
+	getUserById(@Param('id', ParseUUIDPipe) id: string) {
 		return this.usersService.getUserById(id);
 	}
 
@@ -40,5 +44,22 @@ export class UsersController {
 			...newUser,
 			phone: String(newUser.phone),
 		});
+	}
+	@Put(':id')
+	@UseGuards(AuthGuard)
+	updateUser(
+		@Param('id', ParseUUIDPipe) id: string,
+		@Body() userNewData: UpdateUserDto,
+	) {
+		if (userNewData.email) {
+			throw new BadRequestException('No se puede modificar el email');
+		}
+		return this.usersService.updateUser(id, userNewData);
+	}
+
+	@Delete(':id')
+	@UseGuards(AuthGuard)
+	deleteUser(@Param('id', ParseUUIDPipe) id: string) {
+		return this.usersService.deleteUser(id);
 	}
 }

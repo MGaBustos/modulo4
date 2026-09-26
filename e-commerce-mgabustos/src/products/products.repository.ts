@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Products } from '../entities/products.entity';
@@ -35,7 +35,7 @@ export class ProductsRepository {
 				);
 
 				if (!category) {
-					throw new Error(
+					throw new NotFoundException(
 						`La categoría ${element.category} no existe`,
 					);
 				} // <-- 1. Llave agregada aquí para cerrar el if
@@ -65,7 +65,7 @@ export class ProductsRepository {
 	async getProductById(id: string): Promise<Products | string> {
 		const product = await this.productsRepository.findOneBy({ id });
 		if (!product) {
-			return `Producto con id ${id} no encontrado`;
+			throw new NotFoundException(`Producto con id ${id} no encontrado`);
 		}
 		return product;
 	}

@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Users } from '../entities/users.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateUserDto } from './dto/user.dto';
+import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 
 @Injectable()
 export class UsersRepository {
@@ -37,7 +37,8 @@ export class UsersRepository {
 				},
 			},
 		});
-		if (!foundUser) return `No se encontró el usuario con id ${id}`;
+		if (!foundUser)
+			throw new NotFoundException(`Usuario con id: ${id} no encontrado`);
 		const { password: _password, ...userNoPassword } = foundUser;
 		void _password;
 		return userNoPassword;
@@ -50,16 +51,19 @@ export class UsersRepository {
 	async addUser(newUserData: CreateUserDto): Promise<string> {
 		const savedUser = await this.ormUsersRepository.save(newUserData);
 		if (!savedUser.id)
-			throw new Error('No se pudo obtener el id del usuario guardado');
+			throw new NotFoundException(
+				'No se pudo obtener el id del usuario guardado',
+			);
 		return savedUser.id;
 	}
 
 	async updateUser(
 		id: string,
-		newUserData: Partial<Users>,
+		newUserData: UpdateUserDto,
 	): Promise<Omit<Users, 'password'> | string> {
 		const user = await this.ormUsersRepository.findOneBy({ id });
-		if (!user) return `No existe usuario con id ${id}`;
+		if (!user)
+			throw new NotFoundException(`No existe usuario con id ${id}`);
 		const mergedUser = this.ormUsersRepository.merge(user, newUserData);
 		const savedUser = await this.ormUsersRepository.save(mergedUser);
 		const { password, ...userNoPassword } = savedUser;
@@ -69,10 +73,9 @@ export class UsersRepository {
 
 	async deleteUser(id: string): Promise<string> {
 		const foundUser = await this.ormUsersRepository.findOneBy({ id });
-		if (!foundUser) throw new Error(`No existe usuario con id ${id}`);
-		const userId = foundUser.id;
-		if (!userId) throw new Error(`No existe usuario con id ${id}`);
+		if (!foundUser)
+			throw new NotFoundException(`No existe usuario con id ${id}`);
 		await this.ormUsersRepository.remove(foundUser);
-		return userId;
+		return id;
 	}
 }

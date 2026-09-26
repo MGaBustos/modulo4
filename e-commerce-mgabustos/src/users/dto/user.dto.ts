@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
+import { PickType } from '@nestjs/mapped-types';
 import {
 	IsEmail,
 	IsEmpty,
@@ -12,6 +13,7 @@ import {
 } from 'class-validator';
 
 export class CreateUserDto {
+	id?: string;
 	@IsNotEmpty({ message: 'Nombre no puede estar vacío' })
 	@IsString({ message: 'Nombre solo puede contener letras' })
 	@MinLength(3, { message: 'Nombre debe ser de al menos 3 caracteres' })
@@ -70,3 +72,7 @@ export class UpdateUserDto {
 	@MaxLength(20, { message: 'Dirección debe ser de no mas de 20 caracteres' })
 	city!: string;
 }
+export class LoginUserDto extends PickType(CreateUserDto, [
+	'email',
+	'password',
+]) {}

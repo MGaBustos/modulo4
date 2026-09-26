@@ -1,4 +1,9 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import {
+	MiddlewareConsumer,
+	Module,
+	NestModule,
+	OnApplicationBootstrap,
+} from '@nestjs/common';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { ProductsModule } from './products/products.module';
@@ -9,6 +14,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import typeormConfig from './config/typeorm';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CategoriesModule } from './categories/categories.module';
+import { CategoriesService } from './categories/categories.service';
 
 @Module({
 	imports: [
@@ -28,8 +34,12 @@ import { CategoriesModule } from './categories/categories.module';
 	controllers: [],
 	providers: [AppService],
 })
-export class AppModule implements NestModule {
+export class AppModule implements NestModule, OnApplicationBootstrap {
+	constructor(private readonly categoriesService: CategoriesService) {}
 	configure(consumer: MiddlewareConsumer) {
 		consumer.apply(LoggerMiddleware).forRoutes('*');
+	}
+	async onApplicationBootstrap() {
+		await this.categoriesService.addCategories();
 	}
 }

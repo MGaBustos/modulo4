@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OrderDetails } from '../entities/orderDetails.entity';
 import { Orders } from '../entities/order.entity';
@@ -30,7 +30,7 @@ export class OrderRepository {
 			},
 		});
 		if (!order) {
-			return `Orden con id ${id} no encontrada`;
+			throw new NotFoundException(`Orden con id ${id} no encontrada`);
 		}
 		return order;
 	}
@@ -39,7 +39,9 @@ export class OrderRepository {
 		const { userId, products } = newOrderData;
 		const user = await this.ormUsersRepository.findOneBy({ id: userId });
 		if (!user) {
-			return `Usuario con id ${userId} no encontrado`;
+			throw new NotFoundException(
+				`Usuario con id ${userId} no encontrado`,
+			);
 		}
 		const order = new Orders();
 		order.date = new Date();
@@ -56,7 +58,9 @@ export class OrderRepository {
 					id: element.id,
 				});
 				if (!product) {
-					return `Producto con id ${element.id} no encontrado`;
+					throw new NotFoundException(
+						`Producto con id ${element.id} no encontrado`,
+					);
 				}
 				await this.ormProductsRepository.update(
 					{ id: element.id },
@@ -66,13 +70,13 @@ export class OrderRepository {
 			}),
 		);
 		const total = productsArray.reduce(
-			(sum, product) => sum + Number((product as Products).price),
+			(sum, product) => sum + Number(product.price),
 			0,
 		);
 
 		const orderDetail = new OrderDetails();
 		orderDetail.price = Number(Number(total).toFixed(2));
-		orderDetail.products = productsArray as Products[];
+		orderDetail.products = productsArray;
 		orderDetail.order = newOrder;
 		await this.ormOrderDetailRepository.save(orderDetail);
 
