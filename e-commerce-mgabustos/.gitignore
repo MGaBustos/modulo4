@@ -2,7 +2,7 @@
 /dist
 /node_modules
 /build
-repomix-output.txt
+repomix-output.xml
 
 # Logs
 logs
