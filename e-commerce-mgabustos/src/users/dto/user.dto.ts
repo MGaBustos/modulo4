@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { PickType } from '@nestjs/mapped-types';
 import {
 	IsEmail,
@@ -10,7 +9,9 @@ import {
 	IsStrongPassword,
 	MaxLength,
 	MinLength,
+	Validate,
 } from 'class-validator';
+import { MatchPassword } from '../../decorators/matchPassword.decorator';
 
 export class CreateUserDto {
 	id?: string;
@@ -40,7 +41,12 @@ export class CreateUserDto {
 				'La contraseña debe tener al menos 1 minuscula, 1 mayuscula, 1 numero y 1 simbolo como !"·$%&/',
 		},
 	)
+	@IsNotEmpty()
 	password!: string;
+	@IsString()
+	@IsNotEmpty()
+	@Validate(MatchPassword, ['password'])
+	confirmPassword: string | undefined;
 	@IsNotEmpty()
 	@IsNumber(
 		{

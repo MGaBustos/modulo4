@@ -1,7 +1,6 @@
 import {
 	Controller,
 	Get,
-	Post,
 	Param,
 	Body,
 	UseGuards,
@@ -13,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { AuthGuard } from '../auth/guards/auth/auth.guard';
-import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
+import { UpdateUserDto } from './dto/user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -36,14 +35,6 @@ export class UsersController {
 	@UseGuards(AuthGuard)
 	getUserById(@Param('id', ParseUUIDPipe) id: string) {
 		return this.usersService.getUserById(id);
-	}
-
-	@Post()
-	addUser(@Body() newUser: CreateUserDto) {
-		return this.usersService.addUser({
-			...newUser,
-			phone: String(newUser.phone),
-		});
 	}
 	@Put(':id')
 	@UseGuards(AuthGuard)

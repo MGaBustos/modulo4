@@ -1,27 +1,68 @@
-import { Injectable } from '@nestjs/common';
-
-interface User {
-	email: string;
-	password: string;
-}
-
-interface UsersRepository {
-	getUserByEmail(email: string): Promise<User | null>;
-}
-
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { CreateUserDto } from '../users/dto/user.dto';
+import { UsersRepository } from '../users/users.repository';
+import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 @Injectable()
 export class AuthService {
-	usersRepository!: UsersRepository;
+	constructor(
+		private readonly usersRepository: UsersRepository,
+		private readonly jwtService: JwtService,
+	) {}
+
 	getAuth(): string {
 		return 'Auth...';
 	}
-	async signIn(email: string, password: string) {
-		if (!email || !password) return 'Email y Password son requeridos';
+
+	async signUp(newUserData: CreateUserDto) {
+		const { email, password } = newUserData;
 
 		const foundUser = await this.usersRepository.getUserByEmail(email);
-		if (!foundUser) return 'Email o password incorrectos';
-		if (foundUser.password !== password)
-			return 'Email o password incorrectos';
-		return 'Usuario logueado (TOKEN)';
+		if (foundUser) {
+			throw new BadRequestException(
+				`Ya existe un usuario con email: ${email}`,
+			);
+		}
+
+		const hashedPassword = await bcrypt.hash(password, 10);
+
+		const savedUser = await this.usersRepository.addUser({
+			...newUserData,
+			password: hashedPassword,
+		});
+
+		return {
+			message: 'Usuario registrado con éxito',
+			userId: savedUser,
+		};
+	}
+
+	async signIn(
+		email: string,
+		password: string,
+	): Promise<{ message: string; logged: boolean; token: string }> {
+		const foundUser = await this.usersRepository.getUserByEmail(email);
+
+		if (!foundUser || !foundUser.password) {
+			throw new BadRequestException('Email o password incorrectos');
+		}
+
+		const isPasswordValid = await bcrypt.compare(
+			password,
+			foundUser.password,
+		);
+		if (!isPasswordValid)
+			throw new BadRequestException('Email o password incorrectos');
+
+		const payload = {
+			id: foundUser.id,
+			email: foundUser.email,
+		};
+		const token = this.jwtService.sign(payload);
+		return {
+			message: 'Usuario logueado',
+			logged: true,
+			token,
+		};
 	}
 }

@@ -6,9 +6,11 @@ import {
 	Param,
 	Put,
 	Query,
+	UseGuards,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { Products } from '../entities/products.entity';
+import { AuthGuard } from '../auth/guards/auth/auth.guard';
 
 @Controller('products')
 export class ProductsController {
@@ -30,8 +32,8 @@ export class ProductsController {
 	getProductsById(@Param('id') id: string): Promise<Products | string> {
 		return this.productsService.getProductsById(id);
 	}
-
 	@Put(':id')
+	@UseGuards(AuthGuard)
 	updateProduct(
 		@Param('id') id: string,
 		@Body() productNewData: Products,

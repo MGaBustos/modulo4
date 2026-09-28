@@ -49,7 +49,12 @@ export class UsersRepository {
 	}
 
 	async addUser(newUserData: CreateUserDto): Promise<string> {
-		const savedUser = await this.ormUsersRepository.save(newUserData);
+		// 1. Instanciamos la entidad para limpiar campos no pertenecientes a la tabla (como confirmPassword)
+		const newUser = this.ormUsersRepository.create(newUserData);
+
+		// 2. Guardamos la entidad limpia en PostgreSQL
+		const savedUser = await this.ormUsersRepository.save(newUser);
+
 		if (!savedUser.id)
 			throw new NotFoundException(
 				'No se pudo obtener el id del usuario guardado',

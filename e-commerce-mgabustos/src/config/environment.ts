@@ -8,5 +8,6 @@ export const environment = {
 		username: process.env.DB_USERNAME || 'postgres',
 		password: process.env.DB_PASSWORD || 'password',
 		name: process.env.DB_NAME || 'ecommerce',
+		JWT_SECRET: process.env.JWT_SECRET,
 	},
 };

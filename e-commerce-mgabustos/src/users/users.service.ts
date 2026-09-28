@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { UsersRepository } from './users.repository';
 import { Users } from '../entities/users.entity';
-import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
+import { UpdateUserDto } from './dto/user.dto';
 
 @Injectable()
 export class UsersService {
@@ -20,10 +20,6 @@ export class UsersService {
 
 	async getUserByEmail(email: string): Promise<Users | null> {
 		return await this.usersRepository.getUserByEmail(email);
-	}
-
-	async addUser(newUserData: CreateUserDto): Promise<string> {
-		return await this.usersRepository.addUser(newUserData);
 	}
 
 	async updateUser(

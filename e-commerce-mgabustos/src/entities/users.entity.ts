@@ -1,10 +1,4 @@
-import {
-	Entity,
-	Column,
-	PrimaryGeneratedColumn,
-	OneToMany,
-	JoinColumn,
-} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { Orders } from './order.entity';
 
 @Entity('users')
@@ -28,13 +22,15 @@ export class Users {
 	address!: string;
 
 	@Column({
-		type: 'int',
+		type: 'varchar', // Cambiado de 'int' a 'varchar' para evitar desbordamiento de enteros
+		length: 20,
+		nullable: true,
 	})
 	phone!: string;
 
 	@Column({
 		type: 'varchar',
-		length: 100,
+		length: 60,
 		nullable: false,
 	})
 	password!: string;
@@ -46,6 +42,5 @@ export class Users {
 	city?: string;
 
 	@OneToMany(() => Orders, (order) => order.user)
-	@JoinColumn({ name: 'order_id' })
-	orders?: Orders[];
+	orders?: Orders[]; // Se removió @JoinColumn de aquí
 }
