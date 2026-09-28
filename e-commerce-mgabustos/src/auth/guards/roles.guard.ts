@@ -16,7 +16,7 @@ export class RolesGuard implements CanActivate {
 	): boolean | Promise<boolean> | Observable<boolean> {
 		const request = context
 			.switchToHttp()
-			.getRequest<{ user?: { roles?: string } }>();
+			.getRequest<{ user?: { roles?: Role[] } }>();
 		const userRoles = request.user?.roles;
 
 		const routeRoles: Role[] = this.reflector.getAllAndOverride<Role[]>(
@@ -24,6 +24,9 @@ export class RolesGuard implements CanActivate {
 			[context.getHandler(), context.getClass()],
 		);
 
+		if (!routeRoles) {
+			return true;
+		}
 		const isAllowed = routeRoles.some((role) => userRoles?.includes(role));
 		if (!isAllowed) {
 			throw new ForbiddenException(

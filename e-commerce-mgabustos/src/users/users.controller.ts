@@ -26,6 +26,7 @@ export class UsersController {
 	constructor(private readonly usersService: UsersService) {}
 
 	@Get()
+	@ApiBearerAuth()
 	@UseGuards(AuthGuard, RolesGuard)
 	@Roles(Role.Admin)
 	getAllUsers(
@@ -40,6 +41,7 @@ export class UsersController {
 		return this.usersService.getAllUsers(validPage, validLimit);
 	}
 	@Get(':id')
+	@ApiBearerAuth()
 	@UseGuards(AuthGuard, RolesGuard)
 	getUserById(
 		@Param('id', ParseUUIDPipe) id: string,
@@ -47,6 +49,7 @@ export class UsersController {
 		return this.usersService.getUserById(id);
 	}
 	@Put(':id')
+	@ApiBearerAuth()
 	@UseGuards(AuthGuard)
 	updateUser(
 		@Param('id', ParseUUIDPipe) id: string,
@@ -59,6 +62,7 @@ export class UsersController {
 	}
 
 	@Delete(':id')
+	@ApiBearerAuth()
 	@UseGuards(AuthGuard)
 	deleteUser(@Param('id', ParseUUIDPipe) id: string) {
 		return this.usersService.deleteUser(id);

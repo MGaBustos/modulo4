@@ -24,7 +24,7 @@ export class AuthGuard implements CanActivate {
 				'No se proporcionó token de autorización',
 			);
 		}
-		const [type, token] = authHeader.split('');
+		const [type, token] = authHeader.split(' ');
 
 		if (type !== 'Bearer' || !token) {
 			throw new UnauthorizedException(
