@@ -13,17 +13,25 @@ import {
 import { UsersService } from './users.service';
 import { AuthGuard } from '../auth/guards/auth/auth.guard';
 import { UpdateUserDto } from './dto/user.dto';
+import { Roles } from '../decorators/roles.decorator';
+import { Users } from '../entities/users.entity';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Role } from '../common/roles.enum';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Users')
+@ApiBearerAuth()
 @Controller('users')
 export class UsersController {
 	constructor(private readonly usersService: UsersService) {}
 
 	@Get()
-	@UseGuards(AuthGuard)
+	@UseGuards(AuthGuard, RolesGuard)
+	@Roles(Role.Admin)
 	getAllUsers(
 		@Query('page') page?: string,
 		@Query('limit') limit?: string,
-	): any {
+	): Promise<Omit<Users, 'password'>[]> {
 		const pageNum = Number(page);
 		const limitNum = Number(limit);
 
@@ -32,8 +40,10 @@ export class UsersController {
 		return this.usersService.getAllUsers(validPage, validLimit);
 	}
 	@Get(':id')
-	@UseGuards(AuthGuard)
-	getUserById(@Param('id', ParseUUIDPipe) id: string) {
+	@UseGuards(AuthGuard, RolesGuard)
+	getUserById(
+		@Param('id', ParseUUIDPipe) id: string,
+	): Promise<Omit<Users, 'password' | 'isAdmin'> | string> {
 		return this.usersService.getUserById(id);
 	}
 	@Put(':id')

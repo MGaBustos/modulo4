@@ -41,6 +41,9 @@ export class Users {
 	@Column({ nullable: true })
 	city?: string;
 
+	@Column({ default: false })
+	isAdmin!: boolean;
+
 	@OneToMany(() => Orders, (order) => order.user)
 	orders?: Orders[]; // Se removió @JoinColumn de aquí
 }

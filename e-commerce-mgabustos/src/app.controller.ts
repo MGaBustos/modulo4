@@ -1,13 +1,14 @@
 import { Controller, Get } from '@nestjs/common';
-import { UsersService } from './users/users.service';
-import { Users } from './entities/users.entity';
+import { AppService } from './app.service';
+import { ApiTags } from '@nestjs/swagger';
 
-@Controller('users')
-export class UsersController {
-	constructor(private readonly userService: UsersService) {}
+@ApiTags('App')
+@Controller()
+export class AppController {
+	constructor(private readonly appService: AppService) {} // 👈 Debe ser AppService, no UsersService
 
 	@Get()
-	getUsers(): Promise<Omit<Users, 'password'>[]> {
-		return this.userService.getAllUsers(1, 5);
+	getHello(): string {
+		return this.appService.getHello();
 	}
 }

@@ -68,6 +68,8 @@ export class CreateUserDto {
 	@MinLength(5, { message: 'Dirección debe ser de al menos 5 caracteres' })
 	@MaxLength(20, { message: 'Dirección debe ser de no mas de 20 caracteres' })
 	city!: string;
+	@IsEmpty()
+	isAdmin!: boolean;
 }
 export class UpdateUserDto {
 	@IsEmpty()

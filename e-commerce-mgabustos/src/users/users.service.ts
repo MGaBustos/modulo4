@@ -14,7 +14,9 @@ export class UsersService {
 		return await this.usersRepository.getAllUsers(page, limit);
 	}
 
-	async getUserById(id: string): Promise<Omit<Users, 'password'> | string> {
+	async getUserById(
+		id: string,
+	): Promise<Omit<Users, 'password' | 'isAdmin'> | string> {
 		return await this.usersRepository.getUserById(id);
 	}
 

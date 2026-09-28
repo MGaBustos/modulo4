@@ -18,6 +18,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { CategoriesService } from './categories/categories.service';
 import { FileUploadModule } from './file-upload/file-upload.module';
 import { JwtModule } from '@nestjs/jwt';
+import { AppController } from './app.controller';
 
 @Module({
 	imports: [
@@ -44,7 +45,7 @@ import { JwtModule } from '@nestjs/jwt';
 			}),
 		}),
 	],
-	controllers: [],
+	controllers: [AppController],
 	providers: [AppService],
 })
 export class AppModule implements NestModule, OnApplicationBootstrap {

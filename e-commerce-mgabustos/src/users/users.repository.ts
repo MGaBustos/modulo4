@@ -26,7 +26,9 @@ export class UsersRepository {
 		});
 	}
 
-	async getUserById(id: string): Promise<Omit<Users, 'password'> | string> {
+	async getUserById(
+		id: string,
+	): Promise<Omit<Users, 'password' | 'isAdmin'> | string> {
 		const foundUser = await this.ormUsersRepository.findOne({
 			where: { id },
 			relations: {
@@ -39,9 +41,11 @@ export class UsersRepository {
 		});
 		if (!foundUser)
 			throw new NotFoundException(`Usuario con id: ${id} no encontrado`);
-		const { password: _password, ...userNoPassword } = foundUser;
-		void _password;
-		return userNoPassword;
+		const { password: _password, isAdmin, ...filteredUser } = foundUser;
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		(void _password, isAdmin);
+
+		return filteredUser;
 	}
 
 	async getUserByEmail(email: string): Promise<Users | null> {
