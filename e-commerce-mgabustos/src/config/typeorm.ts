@@ -11,8 +11,8 @@ const config = {
 	username: process.env.DB_USERNAME || 'postgres',
 	password: process.env.DB_PASSWORD || 'postgres',
 	database: process.env.DB_NAME,
-	synchronize: true, // Forzamos true para que cree las tablas automáticas en la BD nueva
-	dropSchema: false, // Desactivado para que NO borre las tablas en cada restart
+	synchronize: true,
+	dropSchema: false,
 	logging: true,
 	entities: [__dirname + '/../**/*.entity{.ts,.js}'],
 	migrations: [__dirname + '/../migrations/*{.ts,.js}'],

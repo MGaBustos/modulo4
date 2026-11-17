@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+	Injectable,
+	NotFoundException,
+	BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OrderDetails } from '../entities/orderDetails.entity';
 import { Orders } from '../entities/order.entity';
@@ -20,7 +24,7 @@ export class OrderRepository {
 		private ormProductsRepository: Repository<Products>,
 	) {}
 
-	async getOrderById(id: string): Promise<Orders | string> {
+	async getOrderById(id: string): Promise<Orders> {
 		const order = await this.ormOrdersRepository.findOne({
 			where: { id },
 			relations: {
@@ -35,21 +39,20 @@ export class OrderRepository {
 		return order;
 	}
 
-	async addOrder(newOrderData: CreateOrderDto): Promise<Orders[] | string> {
+	async addOrder(newOrderData: CreateOrderDto): Promise<Orders> {
 		const { userId, products } = newOrderData;
+
+		// 1. Validar Usuario
 		const user = await this.ormUsersRepository.findOneBy({ id: userId });
 		if (!user) {
 			throw new NotFoundException(
 				`Usuario con id ${userId} no encontrado`,
 			);
 		}
-		const order = new Orders();
-		order.date = new Date();
-		order.user = user;
-		const newOrder = await this.ormOrdersRepository.save(order);
 
-		if (!products) {
-			return 'No se proporcionaron productos';
+		// 2. Validar Productos y Stock
+		if (!products || products.length === 0) {
+			throw new BadRequestException('No se proporcionaron productos');
 		}
 
 		const productsArray = await Promise.all(
@@ -62,6 +65,13 @@ export class OrderRepository {
 						`Producto con id ${element.id} no encontrado`,
 					);
 				}
+				if (product.stock <= 0) {
+					throw new BadRequestException(
+						`El producto ${product.name} no tiene stock suficiente`,
+					);
+				}
+
+				// Descontar stock
 				await this.ormProductsRepository.update(
 					{ id: element.id },
 					{ stock: product.stock - 1 },
@@ -69,18 +79,27 @@ export class OrderRepository {
 				return product;
 			}),
 		);
+
+		// 3. Crear Orden
+		const order = new Orders();
+		order.date = new Date();
+		order.user = user;
+		const newOrder = await this.ormOrdersRepository.save(order);
+
+		// 4. Calcular total y crear Detalle
 		const total = productsArray.reduce(
 			(sum, product) => sum + Number(product.price),
 			0,
 		);
 
 		const orderDetail = new OrderDetails();
-		orderDetail.price = Number(Number(total).toFixed(2));
+		orderDetail.price = Number(total.toFixed(2));
 		orderDetail.products = productsArray;
 		orderDetail.order = newOrder;
 		await this.ormOrderDetailRepository.save(orderDetail);
 
-		return await this.ormOrdersRepository.find({
+		// 5. Retornar la orden completa cargada
+		const result = await this.ormOrdersRepository.findOne({
 			where: { id: newOrder.id },
 			relations: {
 				orderDetails: {
@@ -90,5 +109,7 @@ export class OrderRepository {
 				},
 			},
 		});
+
+		return result!;
 	}
 }
